@@ -1,0 +1,137 @@
+<% content_for :title, "Reports - Private Jet Booking Platform" %>
+
+<div class="flex justify-between items-center mb-6">
+  <h2 class="text-xl font-semibold text-yellow-700">Reports & Analytics</h2>
+  <button class="bg-yellow-700 text-white px-4 py-2 rounded-lg hover:bg-yellow-800 flex items-center">
+    <i data-lucide="file-plus" class="w-4 h-4 mr-2"></i>
+    Generate Report
+  </button>
+</div>
+
+<!-- Monthly Statistics -->
+<div class="grid grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+  <div class="bg-white rounded-xl shadow-sm p-6">
+    <h3 class="text-sm font-medium text-gray-500 mb-4">Monthly Overview</h3>
+    <div class="space-y-3">
+      <div class="flex justify-between">
+        <span class="text-sm text-gray-600">Total Flights</span>
+        <span class="text-sm font-semibold"><%= @monthly_stats[:total_flights] %></span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-sm text-gray-600">Completed</span>
+        <span class="text-sm font-semibold text-green-600"><%= @monthly_stats[:completed_flights] %></span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-sm text-gray-600">Cancelled</span>
+        <span class="text-sm font-semibold text-red-600"><%= @monthly_stats[:cancelled_flights] %></span>
+      </div>
+    </div>
+  </div>
+  
+  <div class="bg-white rounded-xl shadow-sm p-6">
+    <h3 class="text-sm font-medium text-gray-500 mb-4">Performance Metrics</h3>
+    <div class="space-y-3">
+      <div class="flex justify-between">
+        <span class="text-sm text-gray-600">On-Time Performance</span>
+        <span class="text-sm font-semibold text-green-600"><%= @monthly_stats[:on_time_performance] %>%</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-sm text-gray-600">Avg Passengers</span>
+        <span class="text-sm font-semibold"><%= @monthly_stats[:average_passengers] %></span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-sm text-gray-600">Most Used Aircraft</span>
+        <span class="text-sm font-semibold"><%= @monthly_stats[:most_used_aircraft] %></span>
+      </div>
+    </div>
+  </div>
+  
+  <div class="bg-white rounded-xl shadow-sm p-6">
+    <h3 class="text-sm font-medium text-gray-500 mb-4">Quick Actions</h3>
+    <div class="space-y-2">
+      <button class="w-full bg-blue-600 text-white py-2 px-3 rounded-lg hover:bg-blue-700 text-sm">
+        Monthly Report
+      </button>
+      <button class="w-full bg-green-600 text-white py-2 px-3 rounded-lg hover:bg-green-700 text-sm">
+        Fleet Utilization
+      </button>
+      <button class="w-full bg-purple-600 text-white py-2 px-3 rounded-lg hover:bg-purple-700 text-sm">
+        VIP Analytics
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Analytics Sections -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+  <!-- Route Analytics -->
+  <div class="bg-white rounded-xl shadow-sm p-6">
+    <h3 class="text-lg font-semibold text-yellow-700 mb-4">Top Routes</h3>
+    <div class="space-y-3">
+      <% @route_analytics.each do |route| %>
+        <div class="flex items-center justify-between">
+          <div class="flex items-center">
+            <i data-lucide="map-pin" class="w-4 h-4 text-gray-400 mr-2"></i>
+            <span class="text-sm font-medium"><%= route[:route] %></span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <span class="text-sm text-gray-600"><%= route[:flights] %> flights</span>
+            <div class="w-16 bg-gray-200 rounded-full h-2">
+              <div class="bg-yellow-600 h-2 rounded-full" style="width: <%= route[:percentage] %>%"></div>
+            </div>
+            <span class="text-xs text-gray-500 w-8"><%= route[:percentage] %>%</span>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+  
+  <!-- VIP Tier Usage -->
+  <div class="bg-white rounded-xl shadow-sm p-6">
+    <h3 class="text-lg font-semibold text-yellow-700 mb-4">VIP Tier Usage</h3>
+    <div class="space-y-3">
+      <% @vip_tier_usage.each do |tier| %>
+        <div class="flex items-center justify-between">
+          <div class="flex items-center">
+            <i data-lucide="crown" class="w-4 h-4 text-gray-400 mr-2"></i>
+            <span class="text-sm font-medium"><%= tier[:tier] %></span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <span class="text-sm text-gray-600"><%= tier[:flights] %> flights</span>
+            <div class="w-16 bg-gray-200 rounded-full h-2">
+              <div class="bg-purple-600 h-2 rounded-full" style="width: <%= tier[:percentage] %>%"></div>
+            </div>
+            <span class="text-xs text-gray-500 w-8"><%= tier[:percentage] %>%</span>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Reports -->
+<div class="bg-white rounded-xl shadow-sm">
+  <div class="p-6 border-b border-gray-100">
+    <h3 class="text-lg font-semibold text-yellow-700">Recent Reports</h3>
+  </div>
+  
+  <div class="divide-y divide-gray-100">
+    <% @recent_reports.each do |report| %>
+      <div class="p-6 flex justify-between items-center">
+        <div>
+          <h4 class="text-sm font-semibold text-gray-800"><%= report[:name] %></h4>
+          <p class="text-xs text-gray-500 mt-1"><%= report[:type] %></p>
+          <p class="text-xs text-gray-500">Generated: <%= Time.parse(report[:generated_at]).strftime("%m/%d/%Y %l:%M %p") %></p>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">
+            <%= report[:status] %>
+          </span>
+          <button class="p-2 text-gray-400 hover:text-gray-600">
+            <i data-lucide="download" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
