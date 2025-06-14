@@ -1,0 +1,323 @@
+<% content_for :title, "Logs & Audit Trail - Private Jet Booking Platform" %>
+
+<div class="flex justify-between items-center mb-6">
+  <h2 class="text-xl font-semibold text-yellow-700">Logs & Audit Trail</h2>
+  <div class="flex items-center space-x-3">
+    <!-- Category Filter -->
+    <div class="bg-white rounded-lg border border-gray-200 p-2">
+      <%= form_with url: logs_audit_path, method: :get, local: true, class: "inline" do |form| %>
+        <%= form.hidden_field :date_range, value: @date_range %>
+        <%= form.hidden_field :selected_user, value: @selected_user %>
+        <%= form.hidden_field :search, value: @search_term %>
+        <%= form.select :filter_type, options_for_select([
+          ['All Categories', 'all'],
+          ['Request Management', 'request_management'],
+          ['Data Access', 'data_access'],
+          ['Security', 'security'],
+          ['User Management', 'user_management'],
+          ['System Maintenance', 'system_maintenance'],
+          ['System Configuration', 'system_configuration']
+        ], @filter_type), {}, { 
+          class: "text-sm border-none bg-transparent outline-none", 
+          onchange: "this.form.submit();" 
+        } %>
+      <% end %>
+    </div>
+    
+    <!-- Date Range Filter -->
+    <div class="bg-white rounded-lg border border-gray-200 p-2">
+      <%= form_with url: logs_audit_path, method: :get, local: true, class: "inline" do |form| %>
+        <%= form.hidden_field :filter_type, value: @filter_type %>
+        <%= form.hidden_field :selected_user, value: @selected_user %>
+        <%= form.hidden_field :search, value: @search_term %>
+        <%= form.select :date_range, options_for_select([
+          ['Today', 'today'],
+          ['This Week', 'week'],
+          ['This Month', 'month'],
+          ['This Quarter', 'quarter'],
+          ['Custom Range', 'custom']
+        ], @date_range), {}, { 
+          class: "text-sm border-none bg-transparent outline-none", 
+          onchange: "this.form.submit();" 
+        } %>
+      <% end %>
+    </div>
+    
+    <!-- User Filter -->
+    <div class="bg-white rounded-lg border border-gray-200 p-2">
+      <%= form_with url: logs_audit_path, method: :get, local: true, class: "inline" do |form| %>
+        <%= form.hidden_field :filter_type, value: @filter_type %>
+        <%= form.hidden_field :date_range, value: @date_range %>
+        <%= form.hidden_field :search, value: @search_term %>
+        <%= form.select :selected_user, options_for_select([
+          ['All Users', 'all'],
+          ['Ahmed Al Rashid', 'Ahmed Al Rashid'],
+          ['Fatima Al Zahra', 'Fatima Al Zahra'],
+          ['Sarah Al Mansoori', 'Sarah Al Mansoori'],
+          ['System', 'System']
+        ], @selected_user), {}, { 
+          class: "text-sm border-none bg-transparent outline-none", 
+          onchange: "this.form.submit();" 
+        } %>
+      <% end %>
+    </div>
+    
+    <!-- Export Button -->
+    <button class="flex items-center text-sm bg-yellow-700 text-white py-2 px-4 rounded-lg hover:bg-yellow-600">
+      <i data-lucide="download" class="w-4 h-4 mr-2"></i>
+      Export Logs
+    </button>
+  </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="grid grid-cols-4 gap-6 mb-6">
+  <div class="bg-white rounded-xl shadow-sm p-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-sm text-gray-500">Today's Events</p>
+        <p class="text-2xl font-bold text-gray-800"><%= @statistics[:todays_events] %></p>
+      </div>
+      <i data-lucide="activity" class="w-8 h-8 text-blue-600"></i>
+    </div>
+  </div>
+  <div class="bg-white rounded-xl shadow-sm p-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-sm text-gray-500">Security Alerts</p>
+        <p class="text-2xl font-bold text-red-600"><%= @statistics[:security_alerts] %></p>
+      </div>
+      <i data-lucide="shield" class="w-8 h-8 text-red-600"></i>
+    </div>
+  </div>
+  <div class="bg-white rounded-xl shadow-sm p-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-sm text-gray-500">Active Users</p>
+        <p class="text-2xl font-bold text-green-600"><%= @statistics[:active_users] %></p>
+      </div>
+      <i data-lucide="users" class="w-8 h-8 text-green-600"></i>
+    </div>
+  </div>
+  <div class="bg-white rounded-xl shadow-sm p-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-sm text-gray-500">Data Access Events</p>
+        <p class="text-2xl font-bold text-orange-600"><%= @statistics[:data_access_events] %></p>
+      </div>
+      <i data-lucide="eye" class="w-8 h-8 text-orange-600"></i>
+    </div>
+  </div>
+</div>
+
+<!-- Audit Logs Table -->
+<div class="bg-white rounded-xl shadow-sm">
+  <div class="p-6 border-b border-gray-100">
+    <div class="flex justify-between items-center">
+      <h3 class="text-lg font-semibold text-yellow-700">Audit Events</h3>
+      <div class="flex items-center space-x-2">
+        <p class="text-sm text-gray-500">
+          <%= @filtered_logs.length %> events
+        </p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Table header -->
+  <div class="grid grid-cols-12 text-xs font-medium text-gray-500 uppercase py-3 px-6 border-b border-gray-100">
+    <div class="flex items-center">
+      <input type="checkbox" class="mr-2 rounded border-gray-300" id="selectAll">
+      <span>Timestamp</span>
+    </div>
+    <div class="col-span-2">Event</div>
+    <div>Category</div>
+    <div>User</div>
+    <div class="col-span-2">Resource</div>
+    <div>IP Address</div>
+    <div>Location</div>
+    <div>Status</div>
+    <div>Severity</div>
+    <div>Actions</div>
+  </div>
+  
+  <!-- Table content -->
+  <div class="divide-y divide-gray-100">
+    <% @filtered_logs.each do |log| %>
+      <div class="log-row">
+        <div class="grid grid-cols-12 py-3 px-6 text-sm items-center hover:bg-gray-50 cursor-pointer"
+             onclick="toggleLogExpansion('<%= log[:id] %>')">
+          <div class="flex items-center">
+            <input type="checkbox" class="mr-2 rounded border-gray-300 log-checkbox" 
+                   value="<%= log[:id] %>" onclick="event.stopPropagation();">
+            <div>
+              <p class="font-mono text-xs text-gray-600">
+                <%= Date.parse(log[:timestamp]).strftime("%m/%d/%Y") %>
+              </p>
+              <p class="font-mono text-xs text-gray-500">
+                <%= Time.parse(log[:timestamp]).strftime("%l:%M:%S %p") %>
+              </p>
+            </div>
+          </div>
+          <div class="col-span-2">
+            <p class="font-medium <%= 
+              case log[:event_type]
+              when 'AUTHENTICATION_FAILURE' then 'text-red-600'
+              when 'VIP_PROFILE_ACCESS' then 'text-orange-600'
+              when 'REQUEST_STATUS_CHANGE' then 'text-blue-600'
+              when 'USER_CREATED' then 'text-green-600'
+              when 'CONFIGURATION_CHANGE' then 'text-purple-600'
+              else 'text-gray-600'
+              end
+            %>">
+              <%= log[:action] %>
+            </p>
+            <p class="text-xs text-gray-500"><%= log[:event_type] %></p>
+          </div>
+          <div>
+            <div class="flex items-center">
+              <i data-lucide="<%= 
+                case log[:category]
+                when 'Request Management' then 'calendar'
+                when 'Data Access' then 'eye'
+                when 'Security' then 'shield'
+                when 'User Management' then 'users'
+                when 'System Maintenance' then 'database'
+                when 'System Configuration' then 'settings'
+                else 'activity'
+                end
+              %>" class="w-4 h-4 mr-2"></i>
+              <span class="text-sm"><%= log[:category] %></span>
+            </div>
+          </div>
+          <div>
+            <p class="font-medium text-gray-800"><%= log[:user] %></p>
+            <p class="text-xs text-gray-500"><%= log[:user_role] %></p>
+          </div>
+          <div class="col-span-2">
+            <p class="font-medium text-gray-800 truncate"><%= log[:resource] %></p>
+            <p class="text-xs text-gray-500"><%= log[:resource_type] %></p>
+          </div>
+          <div>
+            <p class="font-mono text-xs"><%= log[:ip_address] %></p>
+          </div>
+          <div>
+            <p class="text-sm"><%= log[:location] %></p>
+          </div>
+          <div>
+            <% if log[:success] %>
+              <i data-lucide="check-circle" class="w-4 h-4 text-green-600"></i>
+            <% else %>
+              <i data-lucide="x-circle" class="w-4 h-4 text-red-600"></i>
+            <% end %>
+          </div>
+          <div>
+            <span class="px-2 py-1 text-xs font-medium rounded-full border <%= 
+              case log[:severity]
+              when 'CRITICAL' then 'bg-red-100 text-red-700 border-red-200'
+              when 'HIGH' then 'bg-orange-100 text-orange-700 border-orange-200'
+              when 'MEDIUM' then 'bg-yellow-100 text-yellow-700 border-yellow-200'
+              when 'INFO' then 'bg-blue-100 text-blue-700 border-blue-200'
+              else 'bg-gray-100 text-gray-700 border-gray-200'
+              end
+            %>">
+              <%= log[:severity] %>
+            </span>
+          </div>
+          <div class="flex items-center space-x-1">
+            <button class="p-1 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200">
+              <i data-lucide="eye" class="w-4 h-4"></i>
+            </button>
+            <button class="p-1 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200">
+              <i data-lucide="external-link" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Expanded Details -->
+        <div class="log-details" id="details-<%= log[:id] %>" style="display: none;">
+          <div class="px-6 pb-4 bg-gray-50 border-t">
+            <div class="grid grid-cols-2 gap-6 pt-4">
+              <div>
+                <h4 class="font-semibold text-gray-800 mb-3">Event Details</h4>
+                <div class="space-y-2">
+                  <div class="grid grid-cols-2 gap-2">
+                    <span class="text-xs text-gray-500">Log ID:</span>
+                    <span class="text-xs font-mono"><%= log[:id] %></span>
+                  </div>
+                  <div class="grid grid-cols-2 gap-2">
+                    <span class="text-xs text-gray-500">Session ID:</span>
+                    <span class="text-xs font-mono"><%= log[:session_id] || 'N/A' %></span>
+                  </div>
+                  <div class="grid grid-cols-2 gap-2">
+                    <span class="text-xs text-gray-500">User Agent:</span>
+                    <span class="text-xs truncate" title="<%= log[:user_agent] %>"><%= log[:user_agent] %></span>
+                  </div>
+                  <div class="grid grid-cols-2 gap-2">
+                    <span class="text-xs text-gray-500">Resource ID:</span>
+                    <span class="text-xs"><%= log[:resource_id] || 'N/A' %></span>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <h4 class="font-semibold text-gray-800 mb-3">Additional Information</h4>
+                <div class="bg-white rounded-lg p-3">
+                  <pre class="text-xs text-gray-700 whitespace-pre-wrap"><%= JSON.pretty_generate(log[:details]) %></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+  
+  <div class="p-6 border-t border-gray-100 flex justify-between">
+    <p class="text-sm text-gray-500">Showing <%= @filtered_logs.length %> of <%= @audit_logs.length %> audit events</p>
+    <div class="flex">
+      <button class="px-3 py-1 border border-gray-200 rounded-l-lg text-sm text-gray-600">Previous</button>
+      <button class="px-3 py-1 bg-yellow-700 text-white text-sm">1</button>
+      <button class="px-3 py-1 border-y border-r border-gray-200 text-sm text-gray-600">2</button>
+      <button class="px-3 py-1 border-y border-r border-gray-200 text-sm text-gray-600 rounded-r-lg">Next</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleLogExpansion(logId) {
+    const detailsDiv = document.getElementById('details-' + logId);
+    
+    if (detailsDiv.style.display === 'none') {
+      detailsDiv.style.display = 'block';
+    } else {
+      detailsDiv.style.display = 'none';
+    }
+  }
+  
+  // Handle select all checkbox
+  document.getElementById('selectAll').addEventListener('change', function() {
+    const checkboxes = document.querySelectorAll('.log-checkbox');
+    checkboxes.forEach(checkbox => {
+      checkbox.checked = this.checked;
+    });
+  });
+  
+  // Handle individual checkboxes
+  document.querySelectorAll('.log-checkbox').forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+      const allCheckboxes = document.querySelectorAll('.log-checkbox');
+      const checkedCheckboxes = document.querySelectorAll('.log-checkbox:checked');
+      const selectAllCheckbox = document.getElementById('selectAll');
+      
+      if (checkedCheckboxes.length === allCheckboxes.length) {
+        selectAllCheckbox.checked = true;
+        selectAllCheckbox.indeterminate = false;
+      } else if (checkedCheckboxes.length > 0) {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = true;
+      } else {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = false;
+      }
+    });
+  });
+</script>

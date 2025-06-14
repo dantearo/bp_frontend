@@ -44,6 +44,12 @@
         <% end %>
       </li>
       <li>
+        <%= link_to logs_audit_path, class: "w-full flex items-center py-3 px-4 rounded-lg text-white #{request.path == logs_audit_path ? 'bg-white/20 font-medium' : 'hover:bg-white/10'}" do %>
+          <i data-lucide="activity" class="w-5 h-5 mr-3"></i>
+          <span>Logs & Audit</span>
+        <% end %>
+      </li>
+      <li>
         <%= link_to settings_path, class: "w-full flex items-center py-3 px-4 rounded-lg text-white #{request.path == settings_path ? 'bg-white/20 font-medium' : 'hover:bg-white/10'}" do %>
           <i data-lucide="settings" class="w-5 h-5 mr-3"></i>
           <span>Settings</span>

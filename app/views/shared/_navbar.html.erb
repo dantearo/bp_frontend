@@ -1,14 +1,38 @@
 <div class="bg-white border-b border-gray-200 py-3 px-6">
   <div class="flex items-center justify-between">
-    <div class="flex items-center bg-gray-100 rounded-lg px-3 py-2 w-96">
-      <i data-lucide="search" class="w-5 h-5 text-gray-500 mr-2"></i>
-      <%= form_with url: request.path, method: :get, local: true, class: "w-full flex" do |form| %>
-        <%= form.text_field :search, 
-            placeholder: "Search requests by VIP, source, or route...", 
-            class: "bg-transparent border-none outline-none w-full text-sm focus:ring-0 focus:border-none p-0", 
-            value: params[:search] %>
-      <% end %>
-    </div>
+    <% if params[:controller] == 'flight_requests' && params[:action] == 'show' %>
+      <!-- Details page specific header -->
+      <div class="flex items-center">
+        <%= link_to flight_requests_path, class: "flex items-center text-gray-600 hover:text-gray-800 mr-4" do %>
+          <i data-lucide="arrow-left" class="w-5 h-5 mr-2"></i>
+          <span class="text-sm">Back to Requests</span>
+        <% end %>
+        <div class="flex items-center">
+          <h1 class="text-lg font-semibold text-gray-800">Flight Request Details</h1>
+        </div>
+      </div>
+    <% else %>
+      <!-- Default search bar -->
+      <div class="flex items-center bg-gray-100 rounded-lg px-3 py-2 w-96">
+        <i data-lucide="search" class="w-5 h-5 text-gray-500 mr-2"></i>
+        <%= form_with url: request.path, method: :get, local: true, class: "w-full flex" do |form| %>
+          <% if params[:controller] == 'logs_audit' %>
+            <%= form.hidden_field :filter_type, value: params[:filter_type] %>
+            <%= form.hidden_field :date_range, value: params[:date_range] %>
+            <%= form.hidden_field :selected_user, value: params[:selected_user] %>
+            <%= form.text_field :search, 
+                placeholder: "Search logs by user, action, or resource...", 
+                class: "bg-transparent border-none outline-none w-full text-sm focus:ring-0 focus:border-none p-0", 
+                value: params[:search] %>
+          <% else %>
+            <%= form.text_field :search, 
+                placeholder: "Search requests by VIP, source, or route...", 
+                class: "bg-transparent border-none outline-none w-full text-sm focus:ring-0 focus:border-none p-0", 
+                value: params[:search] %>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
     <div class="flex items-center">
       <!-- Language Switcher -->
       <div class="flex items-center border border-gray-200 rounded-lg mr-4 overflow-hidden h-8">

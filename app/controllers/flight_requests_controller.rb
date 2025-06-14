@@ -131,7 +131,7 @@ class FlightRequestsController < ApplicationController
   end
   
   def show
-    @request = find_request(params[:id])
+    @request = find_detailed_request(params[:id])
   end
   
   private
@@ -160,8 +160,109 @@ class FlightRequestsController < ApplicationController
     filtered
   end
   
-  def find_request(id)
-    # This would normally query the database
-    @flight_requests.find { |request| request[:id] == id }
+  def find_detailed_request(id)
+    # Sample detailed request data for the specified ID
+    {
+      id: id,
+      vip_codename: 'FALCON PRIME',
+      vip_real_name: 'Sheikh Mohammed Al Maktoum', # Only shown to authorized users
+      source_of_request: 'Sarah Al Mansoori',
+      organization: 'Royal Court Office',
+      status: 'Request Under Process',
+      priority: 'Ultra High',
+      submitted_at: '2025-05-20T08:30:00Z',
+      departure_date: '2025-05-21',
+      departure_time: '14:00',
+      departure_airport: 'AUH - Abu Dhabi International Airport',
+      departure_airport_code: 'AUH',
+      arrival_time: '18:30',
+      arrival_airport: 'LHR - London Heathrow Airport',
+      arrival_airport_code: 'LHR',
+      passengers: 4,
+      time_to_flight: '18h 30m',
+      urgency_level: 'high',
+      special_requirements: ['Advance Security Sweep', 'Medical Team Standby', 'Silent Protocol', 'No Photography'],
+      notes: 'Royal family member attending state function. Embassy coordination required for security protocols.',
+      assigned_to: 'Ahmed Al Rashid',
+      last_updated: '2025-05-20T09:15:00Z',
+      aircraft_assigned: 'G650ER-UAE01',
+      estimated_flight_time: '4h 30m',
+      legs: [
+        {
+          leg: 1,
+          departure: 'AUH - Abu Dhabi International',
+          arrival: 'LHR - London Heathrow',
+          date: '2025-05-21',
+          departure_time: '14:00',
+          arrival_time: '18:30',
+          local_departure_time: '14:00 GST',
+          local_arrival_time: '18:30 GMT'
+        }
+      ],
+      timeline: [
+        {
+          status: 'Request Sent',
+          timestamp: '2025-05-20T08:30:00Z',
+          user: 'Sarah Al Mansoori',
+          action: 'Flight request submitted',
+          completed: true
+        },
+        {
+          status: 'Request Received',
+          timestamp: '2025-05-20T08:32:00Z',
+          user: 'System',
+          action: 'Request received and assigned to Ahmed Al Rashid',
+          completed: true
+        },
+        {
+          status: 'Request Under Review',
+          timestamp: '2025-05-20T08:45:00Z',
+          user: 'Ahmed Al Rashid',
+          action: 'Security clearance verification initiated',
+          completed: true
+        },
+        {
+          status: 'Request Under Process',
+          timestamp: '2025-05-20T09:15:00Z',
+          user: 'Ahmed Al Rashid',
+          action: 'Aircraft and crew assignment in progress',
+          completed: false,
+          current: true
+        },
+        {
+          status: 'Request Done',
+          timestamp: nil,
+          user: nil,
+          action: 'Flight confirmed and passenger manifest ready',
+          completed: false
+        }
+      ],
+      attachments: [
+        {
+          id: 1,
+          name: 'Security_Protocol_Requirements.pdf',
+          type: 'pdf',
+          size: '245 KB',
+          uploaded_by: 'Sarah Al Mansoori',
+          uploaded_at: '2025-05-20T08:30:00Z'
+        }
+      ],
+      communications: [
+        {
+          id: 1,
+          timestamp: '2025-05-20T09:20:00Z',
+          user: 'Ahmed Al Rashid',
+          type: 'note',
+          message: 'Coordinating with embassy security team for arrival protocols.'
+        },
+        {
+          id: 2,
+          timestamp: '2025-05-20T09:15:00Z',
+          user: 'Ahmed Al Rashid',
+          type: 'status_change',
+          message: 'Status advanced to Under Process. Aircraft G650ER-UAE01 allocated.'
+        }
+      ]
+    }
   end
 end

@@ -20,5 +20,6 @@ Rails.application.routes.draw do
   get "vip_profiles/:id", to: "vip_profiles#show", as: :vip_profile
   get "sources", to: "sources#index"
   get "reports", to: "reports#index"
+  get "logs_audit", to: "logs_audit#index"
   get "settings", to: "settings#index"
 end
