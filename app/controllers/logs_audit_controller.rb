@@ -13,6 +13,10 @@ class LogsAuditController < ApplicationController
       data_access_events: 8
     }
     
+    # Set up table configuration
+    @audit_table_columns = audit_table_columns
+    @audit_expand_content = audit_expand_content
+    
     # Sample audit logs data
     @audit_logs = [
       {
@@ -200,6 +204,181 @@ class LogsAuditController < ApplicationController
     
     # Filter logs based on current selections
     @filtered_logs = filter_logs(@audit_logs)
+  end
+  
+  def audit_table_columns
+    [
+      {
+        key: :timestamp,
+        label: 'Timestamp',
+        type: :datetime,
+        width: 'minmax(120px, 1fr)',
+        class: 'flex items-center'
+      },
+      {
+        key: :action,
+        label: 'Event', 
+        width: 'minmax(150px, 2fr)',
+        render: lambda do |log, index|
+          event_color = case log[:event_type]
+                       when 'AUTHENTICATION_FAILURE' then 'text-red-600'
+                       when 'VIP_PROFILE_ACCESS' then 'text-orange-600' 
+                       when 'REQUEST_STATUS_CHANGE' then 'text-blue-600'
+                       when 'USER_CREATED' then 'text-green-600'
+                       when 'CONFIGURATION_CHANGE' then 'text-purple-600'
+                       else 'text-gray-600'
+                       end
+          <<~HTML.html_safe
+            <div>
+              <p class="font-medium #{event_color}">#{log[:action]}</p>
+              <p class="text-xs text-gray-500">#{log[:event_type]}</p>
+            </div>
+          HTML
+        end
+      },
+      {
+        key: :category,
+        label: 'Category',
+        width: 'minmax(120px, 1fr)',
+        render: lambda do |log, index|
+          icon = case log[:category]
+                 when 'Request Management' then 'calendar'
+                 when 'Data Access' then 'eye'
+                 when 'Security' then 'shield'
+                 when 'User Management' then 'users'
+                 when 'System Maintenance' then 'database'
+                 when 'System Configuration' then 'settings'
+                 else 'activity'
+                 end
+          <<~HTML.html_safe
+            <div class="flex items-center">
+              <i data-lucide="#{icon}" class="w-4 h-4 mr-2"></i>
+              <span class="text-sm">#{log[:category]}</span>
+            </div>
+          HTML
+        end
+      },
+      {
+        key: :user,
+        label: 'User',
+        width: 'minmax(100px, 1fr)',
+        render: lambda do |log, index|
+          <<~HTML.html_safe
+            <div>
+              <p class="font-medium text-gray-800">#{log[:user]}</p>
+              <p class="text-xs text-gray-500">#{log[:user_role]}</p>
+            </div>
+          HTML
+        end
+      },
+      {
+        key: :resource,
+        label: 'Resource',
+        width: 'minmax(150px, 2fr)',
+        render: lambda do |log, index|
+          <<~HTML.html_safe
+            <div>
+              <p class="font-medium text-gray-800 truncate">#{log[:resource]}</p>
+              <p class="text-xs text-gray-500">#{log[:resource_type]}</p>
+            </div>
+          HTML
+        end
+      },
+      {
+        key: :ip_address,
+        label: 'IP Address',
+        width: 'minmax(100px, 1fr)',
+        render: lambda do |log, index|
+          "<p class=\"font-mono text-xs\">#{log[:ip_address]}</p>".html_safe
+        end
+      },
+      {
+        key: :location,
+        label: 'Location',
+        width: 'minmax(80px, 1fr)',
+        render: lambda do |log, index|
+          "<p class=\"text-sm\">#{log[:location]}</p>".html_safe
+        end
+      },
+      {
+        key: :success,
+        label: 'Status',
+        width: 'minmax(60px, 80px)',
+        type: :boolean
+      },
+      {
+        key: :severity,
+        label: 'Severity',
+        width: 'minmax(80px, 100px)',
+        render: lambda do |log, index|
+          badge_class = case log[:severity]
+                       when 'CRITICAL' then 'bg-red-100 text-red-700 border-red-200'
+                       when 'HIGH' then 'bg-orange-100 text-orange-700 border-orange-200'
+                       when 'MEDIUM' then 'bg-yellow-100 text-yellow-700 border-yellow-200'
+                       when 'INFO' then 'bg-blue-100 text-blue-700 border-blue-200'
+                       else 'bg-gray-100 text-gray-700 border-gray-200'
+                       end
+          <<~HTML.html_safe
+            <span class="px-2 py-1 text-xs font-medium rounded-full border #{badge_class}">
+              #{log[:severity]}
+            </span>
+          HTML
+        end
+      },
+      {
+        key: :actions,
+        label: 'Actions',
+        width: 'minmax(80px, 100px)',
+        render: lambda do |log, index|
+          <<~HTML.html_safe
+            <div class="flex items-center space-x-1">
+              <button class="p-1 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200">
+                <i data-lucide="eye" class="w-4 h-4"></i>
+              </button>
+              <button class="p-1 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200">
+                <i data-lucide="external-link" class="w-4 h-4"></i>
+              </button>
+            </div>
+          HTML
+        end
+      }
+    ]
+  end
+  
+  def audit_expand_content
+    lambda do |log, index|
+      <<~HTML.html_safe
+        <div class="grid grid-cols-2 gap-6 pt-4">
+          <div>
+            <h4 class="font-semibold text-gray-800 mb-3">Event Details</h4>
+            <div class="space-y-2">
+              <div class="grid grid-cols-2 gap-2">
+                <span class="text-xs text-gray-500">Log ID:</span>
+                <span class="text-xs font-mono">#{log[:id]}</span>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <span class="text-xs text-gray-500">Session ID:</span>
+                <span class="text-xs font-mono">#{log[:session_id] || 'N/A'}</span>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <span class="text-xs text-gray-500">User Agent:</span>
+                <span class="text-xs truncate" title="#{log[:user_agent]}">#{log[:user_agent]}</span>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <span class="text-xs text-gray-500">Resource ID:</span>
+                <span class="text-xs">#{log[:resource_id] || 'N/A'}</span>
+              </div>
+            </div>
+          </div>
+          <div>
+            <h4 class="font-semibold text-gray-800 mb-3">Additional Information</h4>
+            <div class="bg-white rounded-lg p-3">
+              <pre class="text-xs text-gray-700 whitespace-pre-wrap">#{JSON.pretty_generate(log[:details])}</pre>
+            </div>
+          </div>
+        </div>
+      HTML
+    end
   end
   
   private

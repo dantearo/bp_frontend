@@ -5,6 +5,10 @@ class FlightRequestsController < ApplicationController
     @search_term = params[:search] || ''
     @view_type = params[:view] || 'cards'
     
+    # Set up table configuration
+    @flight_requests_table_columns = flight_requests_table_columns
+    @flight_requests_row_class = flight_requests_row_class
+    
     # Sample data for metrics
     @metrics = [
       { title: 'Total Requests', value: '23', trend: '+5', color: 'blue', urgent: 3 },
@@ -264,5 +268,175 @@ class FlightRequestsController < ApplicationController
         }
       ]
     }
+  end
+  
+  def flight_requests_table_columns
+    [
+      {
+        key: :id,
+        label: 'Request',
+        width: 'minmax(120px, 1fr)',
+        render: lambda do |request, index|
+          <<~HTML.html_safe
+            <div>
+              <p class="font-medium text-gray-800">#{request[:id]}</p>
+              <p class="text-xs text-gray-500">#{request[:source_of_request]}</p>
+            </div>
+          HTML
+        end
+      },
+      {
+        key: :vip_codename,
+        label: 'VIP Profile',
+        width: 'minmax(120px, 1fr)',
+        render: lambda do |request, index|
+          <<~HTML.html_safe
+            <div>
+              <p class="font-medium">#{request[:vip_codename]}</p>
+              <p class="text-xs text-gray-500">#{request[:organization]}</p>
+            </div>
+          HTML
+        end
+      },
+      {
+        key: :route,
+        label: 'Route',
+        width: 'minmax(120px, 1fr)',
+        render: lambda do |request, index|
+          <<~HTML.html_safe
+            <div class="flex items-center text-xs">
+              <span>#{request[:departure_airport].split(' - ')[0]}</span>
+              <i data-lucide="arrow-right" class="w-3 h-3 mx-1 text-gray-400"></i>
+              <span>#{request[:arrival_airport].split(' - ')[0]}</span>
+            </div>
+          HTML
+        end
+      },
+      {
+        key: :departure_date,
+        label: 'Departure',
+        width: 'minmax(100px, 1fr)',
+        render: lambda do |request, index|
+          <<~HTML.html_safe
+            <div>
+              <p class="font-medium">#{request[:departure_date]}</p>
+              <p class="text-xs text-gray-500">#{request[:departure_time]}</p>
+            </div>
+          HTML
+        end
+      },
+      {
+        key: :passengers,
+        label: 'Passengers',
+        width: 'minmax(80px, 100px)',
+        render: lambda do |request, index|
+          <<~HTML.html_safe
+            <div class="flex items-center">
+              <i data-lucide="users" class="w-3 h-3 mr-1 text-gray-400"></i>
+              <span class="font-medium">#{request[:passengers]}</span>
+            </div>
+          HTML
+        end
+      },
+      {
+        key: :status,
+        label: 'Status',
+        width: 'minmax(120px, 1fr)',
+        render: lambda do |request, index|
+          status_class = case request[:status]
+                        when 'Request Received' then 'bg-blue-100 text-blue-700 border-blue-200'
+                        when 'Request Under Review' then 'bg-yellow-100 text-yellow-700 border-yellow-200'
+                        when 'Request Under Process' then 'bg-purple-100 text-purple-700 border-purple-200'
+                        when 'Request Done' then 'bg-green-100 text-green-700 border-green-200'
+                        else 'bg-gray-100 text-gray-700 border-gray-200'
+                        end
+          <<~HTML.html_safe
+            <span class="px-2 py-1 text-xs font-medium rounded-full border #{status_class}">
+              #{request[:status].gsub('Request ', '')}
+            </span>
+          HTML
+        end
+      },
+      {
+        key: :priority,
+        label: 'Priority',
+        width: 'minmax(100px, 1fr)',
+        render: lambda do |request, index|
+          priority_class = case request[:priority]
+                          when 'Ultra High' then 'bg-red-100 text-red-700'
+                          when 'High' then 'bg-orange-100 text-orange-700'
+                          when 'Standard' then 'bg-blue-100 text-blue-700'
+                          else 'bg-gray-100 text-gray-700'
+                          end
+          <<~HTML.html_safe
+            <span class="px-2 py-1 text-xs font-medium rounded-full #{priority_class}">
+              #{request[:priority]}
+            </span>
+          HTML
+        end
+      },
+      {
+        key: :time_to_flight,
+        label: 'Time to Flight',
+        width: 'minmax(100px, 1fr)',
+        render: lambda do |request, index|
+          urgency_indicator = if request[:time_to_flight].match?(/(\d+)h/) && request[:time_to_flight].match(/(\d+)h/)[1].to_i < 12
+                             '⚡'
+                           elsif request[:time_to_flight].match?(/(\d+)h/) && request[:time_to_flight].match(/(\d+)h/)[1].to_i < 24
+                             '🔥'
+                           else
+                             ''
+                           end
+          "<span class=\"font-medium\">#{request[:time_to_flight]} #{urgency_indicator}</span>".html_safe
+        end
+      },
+      {
+        key: :assigned_to,
+        label: 'Assigned To',
+        width: 'minmax(100px, 1fr)',
+        render: lambda do |request, index|
+          "<p class=\"text-sm\">#{request[:assigned_to]}</p>".html_safe
+        end
+      },
+      {
+        key: :actions,
+        label: 'Actions',
+        width: 'minmax(100px, 120px)',
+        render: lambda do |request, index|
+          <<~HTML.html_safe
+            <div class="flex items-center space-x-1">
+              <a href="/flight_requests/#{request[:id]}" class="p-1 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200">
+                <i data-lucide="eye" class="w-4 h-4"></i>
+              </a>
+              <button class="p-1 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200">
+                <i data-lucide="edit" class="w-4 h-4"></i>
+              </button>
+              <button class="p-1 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200">
+                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+              </button>
+            </div>
+          HTML
+        end
+      }
+    ]
+  end
+  
+  def flight_requests_row_class
+    lambda do |request, index|
+      case request[:urgency_level]
+      when 'high' then 'border-l-4 border-l-red-500 bg-red-50'
+      when 'medium' then 'border-l-4 border-l-orange-500 bg-orange-50'
+      when 'low' then 'border-l-4 border-l-green-500 bg-green-50'
+      when 'completed' then 'border-l-4 border-l-gray-500 bg-gray-50'
+      else 'border-l-4 border-l-blue-500 bg-blue-50'
+      end
+    end
+  end
+  
+  private
+  
+  def filter_requests(requests)
+    # Add filtering logic here if needed
+    requests
   end
 end
