@@ -6,12 +6,12 @@ class LogsAuditController < ApplicationController
     @search_term = params[:search] || ''
     
     # Statistics data
-    @statistics = {
-      todays_events: 247,
-      security_alerts: 3,
-      active_users: 12,
-      data_access_events: 8
-    }
+    @statistics = [
+      { title: "Today's Events", value: '247', icon: 'activity', color: 'blue' },
+      { title: 'Security Alerts', value: '3', icon: 'shield', color: 'red' },
+      { title: 'Active Users', value: '12', icon: 'users', color: 'green' },
+      { title: 'Data Access Events', value: '8', icon: 'eye', color: 'orange' }
+    ]
     
     # Set up table configuration
     @audit_table_columns = audit_table_columns

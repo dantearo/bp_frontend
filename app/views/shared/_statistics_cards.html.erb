@@ -1,0 +1,79 @@
+<%# 
+  Reusable statistics cards partial
+  Parameters:
+  - stats: Array of statistic objects with keys: :title, :value, :icon, :color, :trend (optional), :urgent (optional)
+  - columns: Number of columns for grid layout (default: 4)
+%>
+
+<%
+  stats ||= []
+  columns = local_assigns[:columns] || 4
+  grid_cols_class = case columns
+                   when 1 then 'grid-cols-1'
+                   when 2 then 'grid-cols-2'
+                   when 3 then 'grid-cols-3'
+                   when 4 then 'grid-cols-4'
+                   when 5 then 'grid-cols-5'
+                   when 6 then 'grid-cols-6'
+                   else 'grid-cols-4'
+                   end
+%>
+
+<div class="grid <%= grid_cols_class %> gap-6 mb-6">
+  <% stats.each do |stat| %>
+    <div class="bg-white rounded-xl shadow-sm p-6 relative">
+      <div class="flex justify-between items-start mb-4">
+        <h3 class="text-sm font-medium text-gray-500"><%= stat[:title] %></h3>
+        <% if stat[:trend] %>
+          <div class="text-xs px-2 py-1 rounded-lg <%= 
+            case stat[:color]
+            when 'blue' then 'bg-yellow-100 text-yellow-700'
+            when 'orange' then 'bg-orange-100 text-orange-600'
+            when 'purple' then 'bg-purple-100 text-purple-600'
+            when 'red' then 'bg-red-100 text-red-600'
+            when 'green' then 'bg-green-100 text-green-600'
+            else 'bg-gray-100 text-gray-600'
+            end
+          %>">
+            <%= stat[:trend] %>
+          </div>
+        <% end %>
+      </div>
+      
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-3xl font-bold <%= 
+            case stat[:color]
+            when 'blue' then 'text-blue-600'
+            when 'orange' then 'text-orange-600'
+            when 'purple' then 'text-purple-600'
+            when 'red' then 'text-red-600'
+            when 'green' then 'text-green-600'
+            when 'yellow' then 'text-yellow-600'
+            else 'text-gray-800'
+            end
+          %>"><%= stat[:value] %></p>
+        </div>
+        <% if stat[:icon] %>
+          <i data-lucide="<%= stat[:icon] %>" class="w-8 h-8 <%= 
+            case stat[:color]
+            when 'blue' then 'text-blue-600'
+            when 'orange' then 'text-orange-600'
+            when 'purple' then 'text-purple-600'
+            when 'red' then 'text-red-600'
+            when 'green' then 'text-green-600'
+            when 'yellow' then 'text-yellow-600'
+            else 'text-gray-600'
+            end
+          %>"></i>
+        <% end %>
+      </div>
+      
+      <% if stat[:urgent] && stat[:urgent] > 0 %>
+        <div class="absolute top-2 right-2">
+          <div class="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

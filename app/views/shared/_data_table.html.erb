@@ -13,6 +13,7 @@
   - empty_icon: Icon for empty state (default: "table")
   - expand_content: Proc/lambda for custom expanded content (optional)
   - row_class: Proc/lambda that returns CSS classes for each row based on data (optional)
+  - pagination_config: Hash with pagination settings like { current_page: 1, total_pages: 5, per_page: 20 } (optional)
 %>
 
 <%
@@ -27,6 +28,7 @@
   empty_message = local_assigns[:empty_message] || "No data found"
   empty_icon = local_assigns[:empty_icon] || "table"
   row_class = local_assigns[:row_class]
+  pagination_config = local_assigns[:pagination_config]
 %>
 
 <div class="bg-white rounded-xl shadow-sm">
@@ -145,15 +147,72 @@
   <% if show_pagination && !data.empty? %>
     <div class="p-6 border-t border-gray-100 flex justify-between">
       <p class="text-sm text-gray-500">
-        Showing <%= data.length %> of <%= total_count %> <%= data.length == 1 ? 'item' : 'items' %>
+        <% if pagination_config %>
+          Showing <%= ((pagination_config[:current_page] - 1) * pagination_config[:per_page] + 1) %> 
+          to <%= [pagination_config[:current_page] * pagination_config[:per_page], total_count].min %> 
+          of <%= total_count %> <%= total_count == 1 ? 'item' : 'items' %>
+        <% else %>
+          Showing <%= data.length %> of <%= total_count %> <%= data.length == 1 ? 'item' : 'items' %>
+        <% end %>
       </p>
       <div class="flex">
-        <%= content_for :pagination if content_for?(:pagination) %>
-        <% unless content_for?(:pagination) %>
-          <button class="px-3 py-1 border border-gray-200 rounded-l-lg text-sm text-gray-600">Previous</button>
-          <button class="px-3 py-1 bg-yellow-700 text-white text-sm">1</button>
-          <button class="px-3 py-1 border-y border-r border-gray-200 text-sm text-gray-600">2</button>
-          <button class="px-3 py-1 border-y border-r border-gray-200 text-sm text-gray-600 rounded-r-lg">Next</button>
+        <% if pagination_config %>
+          <!-- Smart pagination with config -->
+          <% current_page = pagination_config[:current_page] || 1 %>
+          <% total_pages = pagination_config[:total_pages] || 1 %>
+          <% base_url = pagination_config[:base_url] || request.path %>
+          <% params_hash = pagination_config[:params] || {} %>
+          
+          <!-- Previous button -->
+          <% if current_page > 1 %>
+            <a href="<%= base_url %>?<%= params_hash.merge(page: current_page - 1).to_query %>" 
+               class="px-3 py-1 border border-gray-200 rounded-l-lg text-sm text-gray-600 hover:bg-gray-50">
+              Previous
+            </a>
+          <% else %>
+            <span class="px-3 py-1 border border-gray-200 rounded-l-lg text-sm text-gray-400 cursor-not-allowed">
+              Previous
+            </span>
+          <% end %>
+          
+          <!-- Page numbers -->
+          <% start_page = [current_page - 2, 1].max %>
+          <% end_page = [start_page + 4, total_pages].min %>
+          <% start_page = [end_page - 4, 1].max if end_page - start_page < 4 %>
+          
+          <% (start_page..end_page).each do |page| %>
+            <% if page == current_page %>
+              <span class="px-3 py-1 bg-yellow-700 text-white text-sm">
+                <%= page %>
+              </span>
+            <% else %>
+              <a href="<%= base_url %>?<%= params_hash.merge(page: page).to_query %>" 
+                 class="px-3 py-1 border-y border-r border-gray-200 text-sm text-gray-600 hover:bg-gray-50">
+                <%= page %>
+              </a>
+            <% end %>
+          <% end %>
+          
+          <!-- Next button -->
+          <% if current_page < total_pages %>
+            <a href="<%= base_url %>?<%= params_hash.merge(page: current_page + 1).to_query %>" 
+               class="px-3 py-1 border-y border-r border-gray-200 text-sm text-gray-600 rounded-r-lg hover:bg-gray-50">
+              Next
+            </a>
+          <% else %>
+            <span class="px-3 py-1 border-y border-r border-gray-200 text-sm text-gray-400 rounded-r-lg cursor-not-allowed">
+              Next
+            </span>
+          <% end %>
+        <% else %>
+          <!-- Fallback to content_for or default pagination -->
+          <%= content_for :pagination if content_for?(:pagination) %>
+          <% unless content_for?(:pagination) %>
+            <button class="px-3 py-1 border border-gray-200 rounded-l-lg text-sm text-gray-600">Previous</button>
+            <button class="px-3 py-1 bg-yellow-700 text-white text-sm">1</button>
+            <button class="px-3 py-1 border-y border-r border-gray-200 text-sm text-gray-600">2</button>
+            <button class="px-3 py-1 border-y border-r border-gray-200 text-sm text-gray-600 rounded-r-lg">Next</button>
+          <% end %>
         <% end %>
       </div>
     </div>

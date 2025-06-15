@@ -71,53 +71,9 @@
 </div>
 
 <!-- Statistics Cards -->
-<div class="grid grid-cols-4 gap-6 mb-6">
-  <div class="bg-white rounded-xl shadow-sm p-6">
-    <div class="flex items-center justify-between">
-      <div>
-        <p class="text-sm text-gray-500">Today's Events</p>
-        <p class="text-2xl font-bold text-gray-800"><%= @statistics[:todays_events] %></p>
-      </div>
-      <i data-lucide="activity" class="w-8 h-8 text-blue-600"></i>
-    </div>
-  </div>
-  <div class="bg-white rounded-xl shadow-sm p-6">
-    <div class="flex items-center justify-between">
-      <div>
-        <p class="text-sm text-gray-500">Security Alerts</p>
-        <p class="text-2xl font-bold text-red-600"><%= @statistics[:security_alerts] %></p>
-      </div>
-      <i data-lucide="shield" class="w-8 h-8 text-red-600"></i>
-    </div>
-  </div>
-  <div class="bg-white rounded-xl shadow-sm p-6">
-    <div class="flex items-center justify-between">
-      <div>
-        <p class="text-sm text-gray-500">Active Users</p>
-        <p class="text-2xl font-bold text-green-600"><%= @statistics[:active_users] %></p>
-      </div>
-      <i data-lucide="users" class="w-8 h-8 text-green-600"></i>
-    </div>
-  </div>
-  <div class="bg-white rounded-xl shadow-sm p-6">
-    <div class="flex items-center justify-between">
-      <div>
-        <p class="text-sm text-gray-500">Data Access Events</p>
-        <p class="text-2xl font-bold text-orange-600"><%= @statistics[:data_access_events] %></p>
-      </div>
-      <i data-lucide="eye" class="w-8 h-8 text-orange-600"></i>
-    </div>
-  </div>
-</div>
+<%= render 'shared/statistics_cards', stats: @statistics %>
 
 <!-- Audit Logs Table -->
-<% content_for :pagination do %>
-  <button class="px-3 py-1 border border-gray-200 rounded-l-lg text-sm text-gray-600">Previous</button>
-  <button class="px-3 py-1 bg-yellow-700 text-white text-sm">1</button>
-  <button class="px-3 py-1 border-y border-r border-gray-200 text-sm text-gray-600">2</button>
-  <button class="px-3 py-1 border-y border-r border-gray-200 text-sm text-gray-600 rounded-r-lg">Next</button>
-<% end %>
-
 <%= render 'shared/data_table', 
     data: @filtered_logs,
     columns: @audit_table_columns,
@@ -128,4 +84,11 @@
     empty_message: "No audit events found",
     empty_icon: "file-text",
     total_count: @audit_logs.length,
-    table_id: 'logs-audit' %>
+    table_id: 'logs-audit',
+    pagination_config: {
+      current_page: 1,
+      total_pages: 3,
+      per_page: 20,
+      base_url: logs_audit_path,
+      params: { filter_type: @filter_type, date_range: @date_range, selected_user: @selected_user, search: @search_term }
+    } %>

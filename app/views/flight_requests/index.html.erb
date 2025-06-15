@@ -298,13 +298,6 @@
 
 <!-- Flight Requests List View -->
 <% if @view_type == 'list' %>
-  <% content_for :pagination do %>
-    <button class="px-3 py-1 border border-gray-200 rounded-l-lg text-sm text-gray-600">Previous</button>
-    <button class="px-3 py-1 bg-yellow-700 text-white text-sm">1</button>
-    <button class="px-3 py-1 border-y border-r border-gray-200 text-sm text-gray-600">2</button>
-    <button class="px-3 py-1 border-y border-r border-gray-200 text-sm text-gray-600 rounded-r-lg">Next</button>
-  <% end %>
-
   <%= render 'shared/data_table', 
       data: @filtered_requests,
       columns: @flight_requests_table_columns,
@@ -313,7 +306,14 @@
       empty_message: "No flight requests found",
       empty_icon: "plane",
       total_count: @flight_requests.length,
-      table_id: 'flight-requests-list' %>
+      table_id: 'flight-requests-list',
+      pagination_config: {
+        current_page: 1,
+        total_pages: 2,
+        per_page: 25,
+        base_url: flight_requests_path,
+        params: { view: @view_type, filter: @filter_value, sort: @sort_by, search: @search_term }
+      } %>
 <% end %>
 
 <script>
