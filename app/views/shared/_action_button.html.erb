@@ -1,0 +1,32 @@
+<!-- Generic Action Button Component -->
+<% 
+  button_classes = "flex items-center text-sm py-2 px-4 rounded-lg transition-colors "
+  button_classes += case local_assigns[:style] || 'primary'
+                   when 'primary'
+                     "bg-yellow-700 text-white hover:bg-yellow-600"
+                   when 'secondary'
+                     "bg-gray-600 text-white hover:bg-gray-700"
+                   when 'success'
+                     "bg-green-600 text-white hover:bg-green-700"
+                   when 'danger'
+                     "bg-red-600 text-white hover:bg-red-700"
+                   else
+                     "bg-blue-600 text-white hover:bg-blue-700"
+                   end
+%>
+
+<% if local_assigns[:link_to] %>
+  <%= link_to local_assigns[:link_to], class: button_classes do %>
+    <% if local_assigns[:icon] %>
+      <i data-lucide="<%= local_assigns[:icon] %>" class="w-4 h-4 mr-2"></i>
+    <% end %>
+    <%= local_assigns[:text] %>
+  <% end %>
+<% else %>
+  <button class="<%= button_classes %>" <%= "onclick=\"#{local_assigns[:onclick]}\"" if local_assigns[:onclick] %>>
+    <% if local_assigns[:icon] %>
+      <i data-lucide="<%= local_assigns[:icon] %>" class="w-4 h-4 mr-2"></i>
+    <% end %>
+    <%= local_assigns[:text] %>
+  </button>
+<% end %>

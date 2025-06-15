@@ -1,94 +1,82 @@
-<% content_for :title, "Logs & Audit Trail - Private Jet Booking Platform" %>
+<% content_for :page_title, "Logs & Audit Trail" %>
 
-<div class="flex justify-between items-center mb-6">
-  <h2 class="text-xl font-semibold text-yellow-700">Logs & Audit Trail</h2>
-  <div class="flex items-center space-x-3">
-    <!-- Category Filter -->
-    <div class="bg-white rounded-lg border border-gray-200 p-2">
-      <%= form_with url: logs_audit_path, method: :get, local: true, class: "inline" do |form| %>
-        <%= form.hidden_field :date_range, value: @date_range %>
-        <%= form.hidden_field :selected_user, value: @selected_user %>
-        <%= form.hidden_field :search, value: @search_term %>
-        <%= form.select :filter_type, options_for_select([
-          ['All Categories', 'all'],
-          ['Request Management', 'request_management'],
-          ['Data Access', 'data_access'],
-          ['Security', 'security'],
-          ['User Management', 'user_management'],
-          ['System Maintenance', 'system_maintenance'],
-          ['System Configuration', 'system_configuration']
-        ], @filter_type), {}, { 
-          class: "text-sm border-none bg-transparent outline-none", 
-          onchange: "this.form.submit();" 
-        } %>
-      <% end %>
-    </div>
-    
-    <!-- Date Range Filter -->
-    <div class="bg-white rounded-lg border border-gray-200 p-2">
-      <%= form_with url: logs_audit_path, method: :get, local: true, class: "inline" do |form| %>
-        <%= form.hidden_field :filter_type, value: @filter_type %>
-        <%= form.hidden_field :selected_user, value: @selected_user %>
-        <%= form.hidden_field :search, value: @search_term %>
-        <%= form.select :date_range, options_for_select([
-          ['Today', 'today'],
-          ['This Week', 'week'],
-          ['This Month', 'month'],
-          ['This Quarter', 'quarter'],
-          ['Custom Range', 'custom']
-        ], @date_range), {}, { 
-          class: "text-sm border-none bg-transparent outline-none", 
-          onchange: "this.form.submit();" 
-        } %>
-      <% end %>
-    </div>
-    
-    <!-- User Filter -->
-    <div class="bg-white rounded-lg border border-gray-200 p-2">
-      <%= form_with url: logs_audit_path, method: :get, local: true, class: "inline" do |form| %>
-        <%= form.hidden_field :filter_type, value: @filter_type %>
-        <%= form.hidden_field :date_range, value: @date_range %>
-        <%= form.hidden_field :search, value: @search_term %>
-        <%= form.select :selected_user, options_for_select([
-          ['All Users', 'all'],
-          ['Ahmed Al Rashid', 'Ahmed Al Rashid'],
-          ['Fatima Al Zahra', 'Fatima Al Zahra'],
-          ['Sarah Al Mansoori', 'Sarah Al Mansoori'],
-          ['System', 'System']
-        ], @selected_user), {}, { 
-          class: "text-sm border-none bg-transparent outline-none", 
-          onchange: "this.form.submit();" 
-        } %>
-      <% end %>
-    </div>
-    
-    <!-- Export Button -->
-    <button class="flex items-center text-sm bg-yellow-700 text-white py-2 px-4 rounded-lg hover:bg-yellow-600">
-      <i data-lucide="download" class="w-4 h-4 mr-2"></i>
-      Export Logs
-    </button>
-  </div>
-</div>
+<% content_for :page_controls do %>
+  <!-- Category Filter -->
+  <%= render 'shared/filter_dropdown',
+      form_url: logs_audit_path,
+      field_name: :filter_type,
+      options: [
+        ['All Categories', 'all'],
+        ['Request Management', 'request_management'],
+        ['Data Access', 'data_access'],
+        ['Security', 'security'],
+        ['User Management', 'user_management'],
+        ['System Maintenance', 'system_maintenance'],
+        ['System Configuration', 'system_configuration']
+      ],
+      selected_value: @filter_type,
+      hidden_fields: { date_range: @date_range, selected_user: @selected_user, search: @search_term } %>
+  
+  <!-- Date Range Filter -->
+  <%= render 'shared/filter_dropdown',
+      form_url: logs_audit_path,
+      field_name: :date_range,
+      options: [
+        ['Today', 'today'],
+        ['This Week', 'week'],
+        ['This Month', 'month'],
+        ['This Quarter', 'quarter'],
+        ['Custom Range', 'custom']
+      ],
+      selected_value: @date_range,
+      hidden_fields: { filter_type: @filter_type, selected_user: @selected_user, search: @search_term } %>
+  
+  <!-- User Filter -->
+  <%= render 'shared/filter_dropdown',
+      form_url: logs_audit_path,
+      field_name: :selected_user,
+      options: [
+        ['All Users', 'all'],
+        ['Ahmed Al Rashid', 'Ahmed Al Rashid'],
+        ['Fatima Al Zahra', 'Fatima Al Zahra'],
+        ['Sarah Al Mansoori', 'Sarah Al Mansoori'],
+        ['System', 'System']
+      ],
+      selected_value: @selected_user,
+      hidden_fields: { filter_type: @filter_type, date_range: @date_range, search: @search_term } %>
+  
+  <!-- Export Button -->
+  <%= render 'shared/action_button',
+      text: "Export Logs",
+      icon: "download",
+      style: "primary",
+      onclick: "exportLogs()" %>
+<% end %>
 
-<!-- Statistics Cards -->
-<%= render 'shared/statistics_cards', stats: @statistics %>
+<% content_for :page_stats do %>
+  <%= render 'shared/statistics_cards', stats: @statistics %>
+<% end %>
 
-<!-- Audit Logs Table -->
-<%= render 'shared/data_table', 
-    data: @filtered_logs,
-    columns: @audit_table_columns,
-    title: 'Audit Events',
-    selectable: true,
-    expandable: true,
-    expand_content: @audit_expand_content,
-    empty_message: "No audit events found",
-    empty_icon: "file-text",
-    total_count: @audit_logs.length,
-    table_id: 'logs-audit',
-    pagination_config: {
-      current_page: 1,
-      total_pages: 3,
-      per_page: 20,
-      base_url: logs_audit_path,
-      params: { filter_type: @filter_type, date_range: @date_range, selected_user: @selected_user, search: @search_term }
-    } %>
+<% content_for :page_content do %>
+  <!-- Audit Logs Table -->
+  <%= render 'shared/data_table', 
+      data: @filtered_logs,
+      columns: @audit_table_columns,
+      title: 'Audit Events',
+      selectable: true,
+      expandable: true,
+      expand_content: @audit_expand_content,
+      empty_message: "No audit events found",
+      empty_icon: "file-text",
+      total_count: @audit_logs.length,
+      table_id: 'logs-audit',
+      pagination_config: {
+        current_page: 1,
+        total_pages: 3,
+        per_page: 20,
+        base_url: logs_audit_path,
+        params: { filter_type: @filter_type, date_range: @date_range, selected_user: @selected_user, search: @search_term }
+      } %>
+<% end %>
+
+<%= render 'shared/page_templates/standard_page' %>

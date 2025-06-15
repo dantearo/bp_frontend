@@ -1,0 +1,21 @@
+<% content_for :title, "#{local_assigns[:page_title]} - Private Jet Booking Platform" %>
+
+<!-- Page Header: Title + Controls -->
+<div class="flex justify-between items-center mb-6">
+  <!-- Left: Page Title -->
+  <h2 class="text-xl font-semibold text-yellow-700"><%= local_assigns[:page_title] %></h2>
+  
+  <!-- Right: Controls (Dropdowns, Buttons, Toggle) -->
+  <div class="flex items-center space-x-3">
+    <!-- Render controls passed as partial -->
+    <%= content_for :page_controls if content_for?(:page_controls) %>
+  </div>
+</div>
+
+<!-- Optional: Statistics/Metrics Cards -->
+<% if local_assigns[:show_stats] && local_assigns[:stats_partial] %>
+  <%= render local_assigns[:stats_partial], stats: local_assigns[:stats_data] %>
+<% end %>
+
+<!-- Main Content Area -->
+<%= content_for :page_content if content_for?(:page_content) %>

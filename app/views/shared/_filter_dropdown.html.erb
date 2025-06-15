@@ -1,0 +1,17 @@
+<!-- Generic Filter Dropdown Component -->
+<div class="bg-white rounded-lg border border-gray-200 p-2">
+  <%= form_with url: local_assigns[:form_url], method: :get, local: true, class: "inline" do |form| %>
+    <!-- Preserve other form parameters -->
+    <% (local_assigns[:hidden_fields] || {}).each do |name, value| %>
+      <%= form.hidden_field name, value: value %>
+    <% end %>
+    
+    <!-- Select dropdown -->
+    <%= form.select local_assigns[:field_name], 
+        options_for_select(local_assigns[:options], local_assigns[:selected_value]), 
+        {}, { 
+          class: "text-sm border-none bg-transparent outline-none", 
+          onchange: "this.form.submit();" 
+        } %>
+  <% end %>
+</div>
